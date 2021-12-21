@@ -1,5 +1,6 @@
 import 'package:dictionary/database_helper.dart';
 import 'package:dictionary/model/dictionary.dart';
+import 'package:dictionary/screen/definition_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -39,16 +41,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  DatabaseHelper databaseHelper = DatabaseHelper.instance;
-  List<Dictionary> dictionary = [];
+  DatabaseHelper? databaseHelper = DatabaseHelper.instance;
+  List<Dictionary>? dictionary = [];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    databaseHelper.getAllWord().then((row) {
+    databaseHelper!.getAllWord().then((row) {
       setState(() {
-        for (var element in row) {
-          dictionary.add(Dictionary.fromMapObject(element));
+        for (var element in row!) {
+          dictionary!.add(Dictionary.fromMapObject(element));
         }
       });
     });
@@ -57,14 +59,39 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('English Dictionary'),
+        backgroundColor: Colors.red,
+      ),
       body: Center(
-        child: ListView.builder(
-          itemCount: dictionary.length,
-          padding: const EdgeInsets.all(14),
-          itemBuilder: (context, index) {
-            return ListTile(title: Text('${dictionary[index].word}'));
-          },
+        child: Scrollbar(
+          showTrackOnHover: true,
+          isAlwaysShown: true,
+          radius: const Radius.circular(50),
+          child: ListView.builder(
+            itemCount: dictionary!.length,
+            padding: const EdgeInsets.all(14),
+            itemBuilder: (context, index) {
+              return Card(
+                color: Colors.grey.shade100,
+                child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DefinitionScreen(
+                                  dictionary: dictionary![index],
+                                )));
+                  },
+                  title: Text(
+                    '${dictionary![index].word}',
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  subtitle: Text('${dictionary![index].wordtype}'),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
